@@ -11,7 +11,7 @@ An AI module that classifies student complaints, suggests fixes, and returns **s
 - 🔎 **Routing:** detect if a complaint is technical / non-technical + category & language hints
 - 🧠 **Actionable output:** summary, root cause bullets, solution (code or steps), steps to apply, verification checklist
 - 🧱 **JSON-only contract:** reliable machine-readable responses (`response_format={"type": "json_object"}`)
-- 🧩 **Easy integration:** simple `run_agent()` function; optional `summarize_for_ui()` for frontends
+- 🧩 **Easy integration:** simple `ai_agent()` function; optional `for_frontend()` for frontends
 - 🔒 **Secrets-safe:** uses environment variables / `.env` (never commit your key)
 
 ---
@@ -19,11 +19,11 @@ An AI module that classifies student complaints, suggests fixes, and returns **s
 ## Project Structure
 
 ```
-ai-agent/
+TechnicalSupport_Ai_Agent/
 ├─ complaint_agent.py             # core AI functions: ai_agent(), for_frontend()
-├─ demo.py                 # quick demo runner
+├─ demo.py                        # quick demo runner
 ├─ requirements.txt
-├─ .env.example            # template for local secrets (NO real keys)
+├─ .env.example                   # template for local secrets (NO real keys)
 ├─ .gitignore
 └─ README.md
 ```
