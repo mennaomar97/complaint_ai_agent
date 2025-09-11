@@ -77,7 +77,7 @@ def ai_agent(student_complaint: str, *,model: str = "gpt-4o-mini", temperature: 
         resp = client.chat.completions.create(
             model=model,
             temperature=0,             
-            max_tokens=1000,
+            max_tokens=max_tokens,
             # Forces the model to emit a single JSON object (no prose)
             response_format={"type": "json_object"},
             messages= [

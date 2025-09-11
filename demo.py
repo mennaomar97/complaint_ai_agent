@@ -20,5 +20,5 @@ if os.getenv("DEMO_MODE") == "true":
       "red_flags":[]
     }, indent=2, ensure_ascii=False))
 else:
-    out = ai_agent("My Python code throws ModuleNotFoundError: requests on Windows.")
+    out = ai_agent("بقولك ايه فيجوال استوديو كود مش بيشتغل عندي")
     print(json.dumps(out, indent=2, ensure_ascii=False))
