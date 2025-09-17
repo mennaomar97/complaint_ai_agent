@@ -1,11 +1,26 @@
 # Python
 __pycache__/
 *.py[cod]
+*.pyo
 *.egg-info/
 .venv/
-venv/
 .env
 .env.*
-# IDE
-.vscode/
-.idea/
+
+# DBs
+*.sqlite
+*.db
+*.db-journal
+
+# Alembic local
+migrations/versions/*__pycache__/
+
+# Node / Vite
+node_modules/
+web/node_modules/
+web/dist/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db

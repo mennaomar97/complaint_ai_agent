@@ -20,5 +20,6 @@ if os.getenv("DEMO_MODE") == "true":
       "red_flags":[]
     }, indent=2, ensure_ascii=False))
 else:
-    out = ai_agent("بقولك ايه فيجوال استوديو كود مش بيشتغل عندي")
+    out = ai_agent("يا دكتور، الكانتين خلص أكل بدري أوي ومش عارفين نلاقي حاجة ناكلها بين المحاضرات.")
+
     print(json.dumps(out, indent=2, ensure_ascii=False))
