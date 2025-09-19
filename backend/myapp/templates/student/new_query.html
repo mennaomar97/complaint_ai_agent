@@ -1,0 +1,176 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Submit a Complaint</title>
+    <style>
+      body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;margin:0;padding:1.25rem}
+      h1{font-size:2.2rem;margin:0 0 1rem}
+      .card{border:1px solid #ddd;border-radius:10px;padding:1rem;margin-bottom:1rem}
+      .btn{display:inline-block;padding:.55rem 1rem;border:1px solid #1f4dd8;border-radius:8px;background:#2d6cdf;color:#fff;font-weight:600;cursor:pointer}
+      .btn:disabled{opacity:.6;cursor:not-allowed}
+      .btn-secondary{background:#666;border-color:#444}
+      .muted{color:#666}
+      textarea{width:100%;box-sizing:border-box}
+      ul{margin:.5rem 0 .25rem 1.25rem}
+      .hidden{display:none}
+      .row{display:flex;gap:.75rem;align-items:center;margin-top:.5rem}
+      .meta{font-weight:600;margin:.5rem 0}
+      .error{color:#b00020}
+      .ok{color:#0a6}
+      .section-title{font-weight:700;margin:.75rem 0 .25rem}
+      .hr{height:1px;background:#eee;margin:.75rem 0}
+    </style>
+  </head>
+
+  <body>
+    <h1>Submit a Complaint</h1>
+
+    <!-- Main form creates the ticket -->
+    <form method="post" action="{% url 'ticket_create' %}">
+      {% csrf_token %}
+
+      <div class="card">
+        <h2 style="margin-top:0">AI Recommendation</h2>
+
+        <label for="ai-text" class="muted">Describe your issue</label>
+        <textarea id="ai-text" rows="6" placeholder="Type your complaint here…"></textarea>
+
+        <div class="row">
+          <button type="button" id="ai-run" class="btn">Get Recommendation</button>
+          <span id="ai-status" class="muted"></span>
+        </div>
+
+        <!-- AI result area -->
+        <div id="ai-result" class="hidden">
+          <div id="ai-meta" class="meta"></div>
+          <div id="ai-summary" class="muted"></div>
+
+          <div id="ai-steps"></div>
+
+          <!-- Non-technical path -->
+          <div id="ai-nontech" class="hidden" style="margin-top:.75rem;">
+            <div class="muted">This looks <b>non-technical</b>. Open a ticket?</div>
+            <button type="submit" class="btn btn-secondary">Open Ticket (Non-Technical)</button>
+          </div>
+
+          <!-- Technical path -->
+          <div id="ai-tech" class="hidden" style="margin-top:.75rem;">
+            <button type="submit" class="btn btn-secondary">Escalate to Support</button>
+          </div>
+
+          <div class="hr"></div>
+          <div class="muted" style="font-size:.9rem;">
+            Tip: You can still submit even if the suggestion isn’t perfect—our team will review your ticket.
+          </div>
+        </div>
+      </div>
+
+      <!-- Hidden fields sent with the form -->
+      <input type="hidden" name="complaint_text"  id="complaint_text" />
+      <input type="hidden" name="ai_record_id"    id="ai_record_id" />
+      <input type="hidden" name="ai_is_technical" id="ai_is_technical" />
+      <input type="hidden" name="ai_category"     id="ai_category" />
+    </form>
+
+    <script>
+      (function () {
+        // --- CSRF helper (reads the csrftoken cookie) ---
+        function getCookie(name) {
+          const value = `; ${document.cookie}`;
+          const parts = value.split(`; ${name}=`);
+          if (parts.length === 2) return parts.pop().split(";").shift();
+        }
+
+        const runBtn   = document.getElementById("ai-run");
+        const textEl   = document.getElementById("ai-text");
+        const statusEl = document.getElementById("ai-status");
+
+        const resultBox = document.getElementById("ai-result");
+        const metaEl    = document.getElementById("ai-meta");
+        const sumEl     = document.getElementById("ai-summary");
+        const stepsBox  = document.getElementById("ai-steps");
+        const nontech   = document.getElementById("ai-nontech");
+        const tech      = document.getElementById("ai-tech");
+
+        const hidText = document.getElementById("complaint_text");
+        const hidId   = document.getElementById("ai_record_id");
+        const hidTech = document.getElementById("ai_is_technical");
+        const hidCat  = document.getElementById("ai_category");
+
+        runBtn.addEventListener("click", async () => {
+          const text = textEl.value.trim();
+          if (!text) { alert("Please enter your issue first."); return; }
+
+          // UI reset
+          runBtn.disabled = true;
+          statusEl.textContent = "Thinking…";
+          statusEl.className = "muted";
+          resultBox.classList.add("hidden");
+          nontech.classList.add("hidden");
+          tech.classList.add("hidden");
+          stepsBox.innerHTML = "";
+          sumEl.textContent = "";
+          metaEl.textContent = "";
+
+          try {
+            const res = await fetch("{% url 'student_ai_analyze' %}", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": getCookie("csrftoken"),
+              },
+              body: JSON.stringify({ text }),
+            });
+
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.detail || data.error || "Request failed");
+
+            const ui = data.ui || {};
+            metaEl.textContent = `Category: ${ui.category || "—"} | Technical: ${ui.is_technical ? "true" : "false"}`;
+            sumEl.textContent  = ui.summary || "";
+
+            // merged steps (array of strings)
+            if (Array.isArray(ui.steps) && ui.steps.length) {
+              const title = document.createElement("div");
+              title.className = "section-title";
+              title.textContent = "Steps to apply";
+              stepsBox.appendChild(title);
+
+              const ul = document.createElement("ul");
+              ui.steps.forEach(s => {
+                const li = document.createElement("li");
+                li.textContent = s;
+                ul.appendChild(li);
+              });
+              stepsBox.appendChild(ul);
+            }
+
+            // show the right action
+            if (ui.is_technical === false) {
+              nontech.classList.remove("hidden");
+            } else {
+              tech.classList.remove("hidden");
+            }
+
+            // fill hidden fields so the server can create the ticket
+            hidText.value = text;                         // original complaint
+            hidId.value   = ui.ai_record_id || "";        // optional
+            hidTech.value = ui.is_technical ? "true" : "false";
+            hidCat.value  = ui.category || "";
+
+            resultBox.classList.remove("hidden");
+            statusEl.textContent = "Ready";
+            statusEl.className = "ok";
+
+          } catch (e) {
+            statusEl.textContent = "Error: " + (e.message || e);
+            statusEl.className = "error";
+          } finally {
+            runBtn.disabled = false;
+          }
+        });
+      })();
+    </script>
+  </body>
+</html>

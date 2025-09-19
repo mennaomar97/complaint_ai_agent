@@ -1,0 +1,6 @@
+<h2>Ticket #{{ ticket.id }}</h2>
+<p>Type: {{ ticket.type }} | Status: {{ ticket.status }}</p>
+<p>Category: {{ ticket.ai_category }} | AI technical: {{ ticket.ai_is_technical }}</p>
+<p>Submitted: {{ ticket.created_at }}</p>
+<h3>Description</h3>
+<pre>{{ ticket.text }}</pre>
