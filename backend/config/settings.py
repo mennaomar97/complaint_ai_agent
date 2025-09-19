@@ -20,9 +20,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Load .env one level above if your .env is at project root
 load_dotenv(BASE_DIR.parent / ".env")
 
-# Make available in settings
-
-AI_INTERNAL_TOKEN = os.getenv("AI_INTERNAL_TOKEN", "dev-token-123")
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
